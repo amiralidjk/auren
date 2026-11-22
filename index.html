@@ -175,6 +175,8 @@ footer a{text-decoration:none;margin-left:18px}footer a:hover{color:var(--fg)}
   mix-blend-mode:difference;transition:width .25s,height .25s,margin .25s,background .25s;opacity:0}
 .cur.big{width:64px;height:64px;margin:-32px 0 0 -32px;background:rgba(255,255,255,.08)}
 @media (pointer:coarse){.cur{display:none}}
+@media (pointer:fine){html,body,a,button,*{cursor:none!important}}
+.cur::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--a2)}
 
 @media (max-width:900px){
   .stage{grid-template-columns:1fr;grid-template-rows:auto auto;align-content:center;gap:26px;padding:70px 16px 0}
@@ -498,6 +500,7 @@ document.querySelectorAll('.mag').forEach(b => {
   b.addEventListener('pointerleave', () => { b.style.transition = 'transform .5s cubic-bezier(.2,.9,.25,1.4)'; b.style.transform = ''; setTimeout(() => b.style.transition = '', 500); });
 });
 const cur = $('#cur'); let cx = -100, cy = -100, tx = -100, ty = -100;
+addEventListener('mouseout', e => { if (!e.relatedTarget) cur.style.opacity = 0; });
 addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; cur.style.opacity = 1;
   cur.classList.toggle('big', !!e.target.closest('a,button')); });
 
@@ -512,7 +515,7 @@ function frame(now){
   run(() => drawAurora(t));
   if (intro.getBoundingClientRect().bottom > 0) run(() => drawDust(t));
   if (inStory){ run(() => drawViz(t)); run(() => drawLyrics(t)); run(() => drawDesk(t)); }
-  cx += (tx-cx)*.2; cy += (ty-cy)*.2; cur.style.transform = `translate(${cx}px,${cy}px)`;
+  cx += (tx-cx)*.35; cy += (ty-cy)*.35; cur.style.transform = `translate(${cx}px,${cy}px)`;
 }
 if (reduce){ addEventListener('scroll', () => frame(performance.now()), {passive:true}); setTimeout(() => frame(t0+4000), 100); fontReady.then(() => frame(t0+4000)); }
 else requestAnimationFrame(frame);
