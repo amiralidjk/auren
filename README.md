@@ -38,4 +38,4 @@ Auren draws every widget with your graphics card. The more widgets you turn on, 
 
    Compare the result with the SHA-256 displayed next to the installer in GitHub's Assets list. A match confirms you have the same file published on GitHub.
 
-The installer is currently unsigned. On Windows 11, Smart App Control may block it if Windows can’t verify the publisher. If the installer is blocked, keep Windows protection enabled and [contact Auren support](https://github.com/amiralidjk/auren/issues) with the exact message and release version. [Microsoft’s Smart App Control guidance](https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions)
+The installer is currently unsigned. On Windows 11, Smart App Control may block it if Windows can’t verify the publisher. Windows checks the installer when you open it. [Microsoft’s Smart App Control guidance](https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions)
