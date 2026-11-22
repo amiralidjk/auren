@@ -170,6 +170,29 @@ main,header,footer{position:relative;z-index:1}
 footer{border-top:1px solid var(--line);padding:34px 24px;color:var(--mu);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
 footer a{text-decoration:none;margin-left:18px}footer a:hover{color:var(--fg)}
 
+/* ---------- system requirements ---------- */
+.req{padding:20px 20px 150px;max-width:1040px;margin:0 auto}
+.req .eyebrow{font:600 12px Inter;letter-spacing:.25em;text-transform:uppercase;color:var(--mu);display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.req .eyebrow::before{content:"";width:34px;height:2px;border-radius:2px;background:var(--grad)}
+.req h2{font-size:clamp(36px,5.4vw,72px);line-height:1;margin-bottom:48px}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.spec{position:relative;border-radius:24px;padding:30px 28px;background:rgba(var(--fgrgb),.04);border:1px solid var(--line);backdrop-filter:blur(12px);transition:transform .5s cubic-bezier(.2,.9,.25,1.2),box-shadow .5s}
+.spec:hover{transform:translateY(-4px);box-shadow:0 24px 60px -30px var(--a1)}
+.spec.rec{border-color:transparent;background:linear-gradient(var(--bg),var(--bg)) padding-box,var(--grad) border-box;box-shadow:0 0 50px -24px var(--a2)}
+.spec h3{font-size:26px;display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:20px}
+.spec h3 small{font:600 11px Inter;letter-spacing:.18em;text-transform:uppercase;color:var(--mu)}
+.spec ul{list-style:none;margin:0;padding:0;display:grid}
+.spec li{display:flex;gap:12px;align-items:baseline;padding:11px 0;border-top:1px solid var(--line);color:var(--mu)}
+.spec li:first-child{border-top:0;padding-top:0}
+.spec li::before{content:"";width:7px;height:7px;border-radius:50%;flex:none;background:var(--grad);transform:translateY(-2px);box-shadow:0 0 8px var(--a1)}
+.spec.rec li{color:var(--fg)}
+.nope{margin-top:20px;border-radius:24px;padding:24px 28px;border:1px dashed var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}
+.nope b{font:700 17px "Space Grotesk";margin-right:8px}
+.nope span{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;font-size:14px;color:var(--mu);background:rgba(var(--fgrgb),.04);border:1px solid var(--line)}
+.nope span::before{content:" d7";font-weight:700;color:var(--a1)}
+.reqlink{color:var(--mu);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.reqlink:hover{color:var(--fg)}
+
 /* cursor */
 .cur{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:1.5px solid var(--a2);pointer-events:none;z-index:60;will-change:transform;
   mix-blend-mode:difference;transition:width .25s,height .25s,margin .25s,background .25s;opacity:0}
@@ -183,6 +206,9 @@ footer a{text-decoration:none;margin-left:18px}footer a:hover{color:var(--fg)}
   .rail{display:none}
   .cap h2{font-size:30px}.cap p{font-size:15px}
   footer a{margin:0 16px 0 0}
+  .specs{grid-template-columns:1fr}
+  .req h2{margin-bottom:32px}
+  .spec,.nope{padding:24px 20px}
 }
 </style>
 </head>
@@ -260,9 +286,41 @@ footer a{text-decoration:none;margin-left:18px}footer a:hover{color:var(--fg)}
         <li>Sign in with Google, pay securely with Stripe</li>
       </ul>
       <a class="btn primary mag" href="https://github.com/amiralidjk/auren/releases/latest">Download Auren</a>
-      <p style="color:var(--mu);font-size:13px;margin:16px 0 0">Windows 10 &amp; 11</p>
+      <p style="color:var(--mu);font-size:13px;margin:16px 0 0">Windows 10 &amp; 11 · <a class="reqlink" href="#req">system requirements</a></p>
       <p style="color:var(--mu);font-size:13px;margin:6px 0 0">If Windows says &ldquo;Windows protected your PC&rdquo;, click <b>More info</b> &rarr; <b>Run anyway</b>.</p>
     </div></div>
+  </div>
+</section>
+
+<section class="req" id="req">
+  <div class="eyebrow reveal">System requirements</div>
+  <h2 class="reveal">Will it run <span class="grad">on your PC?</span></h2>
+  <div class="specs">
+    <div class="spec reveal d1">
+      <h3>Minimum</h3>
+      <ul>
+        <li>Windows 10 64-bit (version 1809 or newer)</li>
+        <li>64-bit dual-core Intel/AMD processor</li>
+        <li>4 GB RAM</li>
+        <li>DirectX 11 graphics with hardware acceleration on</li>
+        <li>500 MB free disk space</li>
+        <li>Internet for sign-in and at least once every 14 days</li>
+      </ul>
+    </div>
+    <div class="spec rec reveal d2">
+      <h3><span class="grad">Recommended</span></h3>
+      <ul>
+        <li>Windows 11</li>
+        <li>Quad-core processor</li>
+        <li>8 GB RAM</li>
+        <li>A dedicated or recent built-in GPU for many widgets on a 4K or high-refresh screen</li>
+        <li>An SSD</li>
+      </ul>
+    </div>
+  </div>
+  <div class="nope reveal">
+    <b>Where it won&rsquo;t run</b>
+    <span>Windows 7, 8 and 8.1</span><span>Windows 10 older than version 1809</span><span>32-bit Windows</span><span>Windows 10 on ARM</span><span>S mode</span><span>macOS, Linux and ChromeOS</span>
   </div>
 </section>
 </main>
