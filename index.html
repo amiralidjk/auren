@@ -3,39 +3,520 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Auren</title>
-<meta name="description" content="Auren: music-reactive desktop widgets for Windows.">
+<title>Auren — your desktop, in rhythm</title>
+<meta name="description" content="Auren: music-reactive visualizers, lyrics and widgets for your Windows desktop. One payment of £1.99.">
+<meta name="theme-color" content="#05040a">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#f4efe6; --fg:#1d1b19; --muted:#6b645b; --card:#fffaf2; --line:#e3dacb; --accent:#c2683f; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#1b1a1d; --fg:#f2efe9; --muted:#a39d94; --card:#252428; --line:#34323a; --accent:#e08a5e; } }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.6 system-ui, "Segoe UI", sans-serif; }
-  main { max-width:760px; margin:0 auto; padding:64px 16px; }
-  h1 { font-size:clamp(40px,8vw,64px); margin:0 0 8px; letter-spacing:-0.02em; }
-  .lead { font-size:20px; color:var(--muted); margin:0 0 32px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px; margin:16px 0; }
-  .btn { display:inline-block; background:var(--accent); color:#fff; text-decoration:none; padding:12px 20px; border-radius:10px; font-weight:600; }
-  ul { padding-left:20px; }
-  footer { margin-top:48px; color:var(--muted); font-size:14px; }
-  a { color:var(--accent); }
+:root{
+  --bg:#05040a; --fg:#f5f3ff; --mu:#9f99bd; --a1:#ad27ff; --a2:#00dff0; --w1:#1b0b33; --w2:#041826;
+  --fgrgb:245,243,255; --beat:0;
+  --grad:linear-gradient(100deg,var(--a1),var(--a2));
+  --glass:color-mix(in srgb,var(--bg) 55%,transparent);
+  --line:rgba(var(--fgrgb),.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Inter,system-ui,"Segoe UI",sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+h1,h2,h3{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.03em;margin:0;font-weight:700}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+#aurora{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;filter:blur(30px)}
+main,header,footer{position:relative;z-index:1}
+
+/* top bar */
+.top{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:center;padding:18px 24px;pointer-events:none}
+.top>*{pointer-events:auto}
+.brand{display:flex;align-items:center;gap:9px;font:700 18px "Space Grotesk";text-decoration:none}
+.brand svg{width:26px;height:26px}
+.btn{position:relative;display:inline-flex;align-items:center;gap:9px;padding:13px 24px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;
+  border:1px solid var(--line);background:rgba(var(--fgrgb),.05);backdrop-filter:blur(10px);transition:box-shadow .3s,background .3s;cursor:pointer;color:var(--fg)}
+.btn.primary{background:var(--grad);border:0;color:#fff;box-shadow:0 10px 34px -10px var(--a1)}
+.btn.primary:hover{box-shadow:0 14px 44px -6px var(--a2)}
+.btn.small{padding:9px 18px;font-size:14px}
+
+/* ---------- intro ---------- */
+.intro{height:100vh;height:100svh;position:relative;display:grid;place-items:end center;padding-bottom:9vh;text-align:center;overflow:hidden}
+#dust{position:absolute;inset:0;width:100%;height:100%}
+.intro-copy{position:relative}
+.intro h1{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.slogan{font:700 clamp(22px,3.4vw,34px) "Space Grotesk";letter-spacing:-.02em;margin:0 0 6px;
+  background:linear-gradient(90deg,var(--fg),var(--a1),var(--a2),var(--fg));background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:300% 0}}
+.sub{color:var(--mu);margin:0 0 26px;font-size:17px}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.appear{opacity:0;transform:translateY(20px);animation:appear 1s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes appear{to{opacity:1;transform:none}}
+.cue{margin-top:34px;font-size:12px;letter-spacing:.25em;text-transform:uppercase;color:var(--mu);display:flex;flex-direction:column;align-items:center;gap:10px}
+.cue i{width:1px;height:46px;background:linear-gradient(var(--a1),transparent);position:relative;overflow:hidden}
+.cue i::after{content:"";position:absolute;left:0;top:-20px;width:1px;height:20px;background:var(--fg);animation:drip 1.8s infinite}
+@keyframes drip{to{top:46px}}
+
+/* ---------- story ---------- */
+.story{height:760vh;position:relative}
+.stage{position:sticky;top:0;height:100vh;height:100svh;display:grid;grid-template-columns:minmax(260px,360px) 1fr 60px;align-items:center;gap:3vw;padding:0 4vw;overflow:hidden}
+.cap .num{font:600 13px Inter;letter-spacing:.2em;color:var(--mu);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.cap .num b{font:700 13px "Space Grotesk";color:var(--fg)}
+.cap .num .track{width:90px;height:2px;background:var(--line);border-radius:2px;overflow:hidden}
+.cap .num .track i{display:block;height:100%;width:var(--cp,0%);background:var(--grad)}
+.cap h2{font-size:clamp(32px,4vw,56px);line-height:1.02;margin-bottom:16px}
+.cap p{color:var(--mu);font-size:17px;margin:0}
+.wd{display:inline-block;opacity:0;transform:translateY(.7em) rotate(3deg);filter:blur(8px);transition:opacity .6s,transform .7s cubic-bezier(.2,.8,.2,1),filter .6s;transition-delay:calc(var(--i)*35ms)}
+.in .wd{opacity:1;transform:none;filter:none}
+
+.rail{display:flex;flex-direction:column;gap:14px;align-items:flex-end}
+.rail button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:transparent;transition:color .3s}
+.rail button::after{content:"";width:8px;height:8px;border-radius:50%;border:1.5px solid var(--mu);transition:.4s}
+.rail button:hover{color:var(--mu)}
+.rail button.on{color:var(--fg)}
+.rail button.on::after{background:var(--grad);border-color:transparent;transform:scale(1.4);box-shadow:0 0 12px var(--a1)}
+
+/* the monitor */
+.monitor{justify-self:center;width:min(940px,100%);perspective:1600px}
+.desk{position:relative;aspect-ratio:16/10;border-radius:16px;overflow:hidden;container-type:inline-size;transform-origin:50% 80%;
+  background:radial-gradient(110% 90% at 85% 0%,var(--w1),transparent 60%),radial-gradient(90% 80% at 0% 100%,var(--w2),transparent 60%),var(--bg);
+  border:1px solid var(--line);
+  box-shadow:0 60px 120px -40px rgba(0,0,0,.65),0 0 calc(30px + var(--beat)*70px) color-mix(in srgb,var(--a1) calc(18% + var(--beat)*22%),transparent)}
+.stand{width:18%;height:22px;margin:0 auto;background:linear-gradient(rgba(var(--fgrgb),.12),rgba(var(--fgrgb),.03));clip-path:polygon(18% 0,82% 0,100% 100%,0 100%)}
+.foot{width:30%;height:5px;margin:0 auto;border-radius:5px;background:rgba(var(--fgrgb),.1)}
+
+.icons{position:absolute;left:2.2%;top:12%;display:grid;gap:2.2cqw;transition:opacity .8s}
+.icons i{width:4cqw;height:4cqw;border-radius:1cqw;background:rgba(var(--fgrgb),.14);display:block}
+.icons span{display:block;font-size:1cqw;color:var(--mu);text-align:center;margin-top:.4cqw}
+
+.w{position:absolute;border-radius:1.4cqw;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px);font-size:1.25cqw;color:var(--mu);overflow:hidden;
+  opacity:0;transform:var(--from);
+  transition:opacity .8s,transform 1s cubic-bezier(.2,.9,.25,1.15),left 1s cubic-bezier(.6,0,.2,1.1),top 1s cubic-bezier(.6,0,.2,1.1),width 1s cubic-bezier(.6,0,.2,1.1),height 1s cubic-bezier(.6,0,.2,1.1),box-shadow .3s}
+.w.show{opacity:1;transform:none}
+.w b{color:var(--fg)}
+.finale .w.show{box-shadow:0 0 calc(var(--beat)*3cqw) color-mix(in srgb,var(--a2) 55%,transparent)}
+
+#wViz{left:4%;top:14%;width:46%;height:46%;--from:translateX(-30%) scale(.7) rotate(-6deg)}
+#wViz canvas{width:100%;height:100%;display:block}
+#wViz .lbl{position:absolute;left:1.2cqw;top:1cqw;font:600 1.05cqw Inter;letter-spacing:.15em;text-transform:uppercase;color:var(--fg);opacity:.7}
+#wLy{left:53%;top:14%;width:43%;height:46%;padding:1.6cqw;display:flex;flex-direction:column;--from:translateX(35%) scale(.7) rotate(6deg)}
+#wClk{left:4%;top:63%;width:26%;height:21%;padding:1.4cqw;--from:translateY(60%) scale(.4)}
+#wWx{left:33%;top:63%;width:24%;height:21%;padding:1.4cqw;--from:translateY(60%) scale(.4)}
+#wCal{left:60%;top:63%;width:36%;height:21%;padding:1.2cqw 1.4cqw;--from:translateY(60%) scale(.4)}
+.arrange #wViz{left:4%;top:14%;width:92%;height:38%}
+.arrange #wLy{left:4%;top:55%;width:38%;height:29%}
+.arrange #wClk{left:45%;top:55%;width:22%;height:13.5%}
+.arrange #wWx{left:45%;top:70.5%;width:22%;height:13.5%}
+.arrange #wCal{left:70%;top:55%;width:26%;height:29%}
+.arrange .w.show{border-color:var(--a2);border-style:dashed}
+
+.np{display:flex;gap:1.2cqw;align-items:center}
+.cover{width:5cqw;height:5cqw;border-radius:50%;flex:none;background:conic-gradient(var(--a1),var(--a2),var(--a1));animation:spin 8s linear infinite;position:relative}
+.cover::after{content:"";position:absolute;inset:38%;border-radius:50%;background:var(--bg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.np b{display:block;font:700 1.6cqw "Space Grotesk"}
+.prog{height:.35cqw;border-radius:1cqw;background:rgba(var(--fgrgb),.12);margin:1.2cqw 0 .4cqw;overflow:hidden}
+.prog i{display:block;height:100%;width:var(--w,0%);background:var(--grad)}
+.lines{flex:1;position:relative;overflow:hidden;-webkit-mask:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask:linear-gradient(transparent,#000 30%,#000 70%,transparent)}
+.lines ul{list-style:none;margin:0;padding:0;position:absolute;left:0;right:0;top:50%;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.lines li{font:700 2.3cqw/1.3 "Space Grotesk";padding:.4cqw 0;color:rgba(var(--fgrgb),.2);filter:blur(1px);transition:color .5s,filter .5s}
+.lines li.on{filter:none;color:transparent;background:linear-gradient(90deg,var(--fg) var(--p,0%),rgba(var(--fgrgb),.3) var(--p,0%));-webkit-background-clip:text;background-clip:text}
+
+#wClk b{display:block;font:700 4.6cqw/1 "Space Grotesk";margin-bottom:.5cqw}
+.wx{display:flex;gap:1.2cqw;align-items:center}
+.sun{width:4cqw;height:4cqw;border-radius:50%;flex:none;background:radial-gradient(circle,#fff,var(--a2) 55%,transparent 70%);box-shadow:0 0 2cqw var(--a2);animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.15)}}
+.wx b{font:700 2.8cqw "Space Grotesk"}
+.fc{display:flex;gap:.6cqw;align-items:flex-end;height:3cqw;margin-top:1cqw}
+.fc i{flex:1;border-radius:.3cqw;background:var(--grad);opacity:.7;animation:grow 2.4s ease-in-out infinite alternate}
+@keyframes grow{from{transform:scaleY(.6)}}
+.fc i{transform-origin:bottom}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:.25cqw;margin-top:.6cqw;font-size:.95cqw;text-align:center}
+.cal span{border-radius:.4cqw;padding:.1cqw 0}
+.cal .t{background:var(--grad);color:#fff;font-weight:600}
+
+.sbar{position:absolute;top:1.2%;left:1.2%;right:1.2%;height:6.5%;border-radius:1cqw;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(10px);
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 1.4cqw;font-size:1.15cqw;color:var(--mu);
+  transform:translateY(-140%);transition:transform .9s cubic-bezier(.2,.9,.25,1.2)}
+.sbar.show{transform:none}
+.ws{display:flex;gap:.7cqw}.ws i{width:.9cqw;height:.9cqw;border-radius:50%;background:rgba(var(--fgrgb),.25);transition:.4s}.ws i.on{width:2.4cqw;border-radius:.5cqw;background:var(--grad)}
+.sbar .c{font:600 1.3cqw "Space Grotesk";color:var(--fg)}
+.sbar .r{display:flex;gap:1.2cqw;justify-content:flex-end;align-items:center}
+.mini{display:flex;gap:.25cqw;align-items:flex-end;height:1.8cqw}.mini i{width:.35cqw;background:var(--a2);border-radius:.1cqw}
+.dock{position:absolute;bottom:2.4%;left:50%;display:flex;align-items:flex-end;gap:1cqw;padding:.9cqw 1.1cqw;border-radius:2cqw;
+  background:rgba(var(--fgrgb),.08);border:1px solid rgba(var(--fgrgb),.16);backdrop-filter:blur(14px);
+  transform:translate(-50%,180%);transition:transform 1s cubic-bezier(.2,.9,.25,1.2) .15s}
+.dock.show{transform:translate(-50%,0)}
+.dock i{width:4cqw;height:4cqw;border-radius:1.1cqw;display:block;transform-origin:bottom;box-shadow:0 .4cqw 1.2cqw rgba(0,0,0,.35)}
+.gridov{position:absolute;inset:0;opacity:0;transition:opacity .8s;pointer-events:none;
+  background-image:linear-gradient(color-mix(in srgb,var(--a2) 30%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--a2) 30%,transparent) 1px,transparent 1px);background-size:4% 6.4%}
+.arrange .gridov{opacity:1}
+.arrange .icons{opacity:0}
+.hello{position:absolute;inset:0;display:grid;place-items:center;font:700 3cqw "Space Grotesk";color:rgba(var(--fgrgb),.25);transition:opacity .6s;letter-spacing:.3em}
+.hello.gone{opacity:0}
+
+/* ---------- finale ---------- */
+.end{min-height:100vh;display:grid;place-items:center;text-align:center;padding:120px 20px}
+.end h2{font-size:clamp(44px,8vw,110px);line-height:.95}
+.end h2 span{display:block}
+.ticket{position:relative;width:min(460px,100%);margin:56px auto 0;padding:2px;border-radius:28px;overflow:hidden}
+.ticket::before{content:"";position:absolute;inset:-60%;background:conic-gradient(var(--a1),var(--a2),#fff,var(--a1));animation:spin 5s linear infinite}
+.ticket .in2{position:relative;background:var(--bg);border-radius:26px;padding:38px 30px}
+.amt{font:700 clamp(64px,10vw,96px)/1 "Space Grotesk"}
+.ticket ul{list-style:none;padding:0;margin:22px 0 28px;display:grid;gap:9px;text-align:left}
+.ticket li{display:flex;gap:10px;align-items:center}
+.ticket li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--grad);flex:none;box-shadow:0 0 8px var(--a1)}
+.reveal{opacity:0;transform:translateY(50px) scale(.97);filter:blur(8px);transition:1.1s cubic-bezier(.2,.8,.2,1)}
+.reveal.on{opacity:1;transform:none;filter:none}
+.d1{transition-delay:.15s}.d2{transition-delay:.3s}
+footer{border-top:1px solid var(--line);padding:34px 24px;color:var(--mu);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
+footer a{text-decoration:none;margin-left:18px}footer a:hover{color:var(--fg)}
+
+/* cursor */
+.cur{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:1.5px solid var(--a2);pointer-events:none;z-index:60;
+  mix-blend-mode:difference;transition:width .25s,height .25s,margin .25s,background .25s;opacity:0}
+.cur.big{width:64px;height:64px;margin:-32px 0 0 -32px;background:rgba(255,255,255,.08)}
+@media (pointer:coarse){.cur{display:none}}
+
+@media (max-width:900px){
+  .stage{grid-template-columns:1fr;grid-template-rows:auto auto;align-content:center;gap:26px;padding:70px 16px 0}
+  .rail{display:none}
+  .cap h2{font-size:30px}.cap p{font-size:15px}
+  footer a{margin:0 16px 0 0}
+}
 </style>
 </head>
 <body>
-<main>
-  <h1>Auren</h1>
-  <p class="lead">Music-reactive widgets and visualizers for your Windows desktop.</p>
-  <div class="card">
-    <ul>
-      <li>Visualizers, lyrics, now playing, clock, weather, calendar and more.</li>
-      <li>Everything reacts to the music you're playing.</li>
-      <li>One payment of £0.99 for lifetime access. Sign in with Google to unlock.</li>
-    </ul>
-    <p><a class="btn" href="https://github.com/amiralidjk/auren/releases/latest">Download for Windows</a></p>
+<canvas id="aurora"></canvas>
+<div class="cur" id="cur"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="g" x1="70" y1="320" x2="430" y2="170" gradientUnits="userSpaceOnUse"><stop stop-color="#ad27ff"/><stop offset=".5" stop-color="#9b83ff"/><stop offset="1" stop-color="#00dff0"/></linearGradient>
+  <g id="logo" fill="none" stroke="url(#g)" stroke-linecap="round"><path d="M100 211 A163 163 0 0 1 412 211" stroke-width="39"/><path d="M109 316 A156 156 0 0 0 403 316" stroke-width="39"/><path d="M72 264 C127 285 156 212 202 224 C245 230 263 302 309 289 C354 275 376 235 438 256" stroke-width="24"/></g>
+</defs></svg>
+
+<div class="top">
+  <a class="brand" href="#"><svg viewBox="0 0 512 512"><use href="#logo"/></svg>Auren</a>
+  <a class="btn primary small mag" href="https://github.com/amiralidjk/auren/releases/latest">Download</a>
+</div>
+
+<header class="intro">
+  <canvas id="dust"></canvas>
+  <div class="intro-copy">
+    <h1>Auren</h1>
+    <p class="slogan appear" style="animation-delay:2.2s">Your desktop, in rhythm.</p>
+    <p class="sub appear" style="animation-delay:2.4s">Music-reactive visualizers, lyrics and widgets for Windows.</p>
+    <div class="cta appear" style="animation-delay:2.6s">
+      <a class="btn primary mag" href="https://github.com/amiralidjk/auren/releases/latest">Download for Windows</a>
+      <a class="btn mag" href="#story">Watch it come alive</a>
+    </div>
+    <div class="cue appear" style="animation-delay:3.2s">Scroll<i></i></div>
   </div>
-  <footer>
-    <a href="privacy.html">Privacy policy</a> ·
-    <a href="https://github.com/amiralidjk/auren/issues">Contact / support</a>
-  </footer>
+</header>
+
+<main>
+<section class="story" id="story">
+  <div class="stage">
+    <div class="cap" id="cap">
+      <div class="num"><b id="capN">01</b><span class="track"><i id="capT"></i></span><span>07</span></div>
+      <h2 id="capH"></h2>
+      <p id="capP"></p>
+    </div>
+    <div class="monitor">
+      <div class="desk" id="desk">
+        <div class="icons"><div><i></i><span>Files</span></div><div><i></i><span>Music</span></div><div><i></i><span>Games</span></div></div>
+        <div class="hello" id="hello">press play</div>
+        <div class="gridov"></div>
+        <div class="w" id="wViz"><canvas id="vizCv"></canvas><span class="lbl" id="vizLbl">Bars</span></div>
+        <div class="w" id="wLy">
+          <div class="np"><div class="cover"></div><div><b>Night Signal</b>Auren demo track</div></div>
+          <div class="prog"><i id="prog"></i></div>
+          <div class="lines"><ul id="ly"></ul></div>
+        </div>
+        <div class="w" id="wClk"><b id="clk">12:00</b><span id="date">Sunday</span></div>
+        <div class="w" id="wWx"><div class="wx"><div class="sun"></div><div><b>18°</b><br>Clear night</div></div>
+          <div class="fc"><i style="height:60%"></i><i style="height:85%;animation-delay:.3s"></i><i style="height:50%;animation-delay:.6s"></i><i style="height:75%;animation-delay:.9s"></i><i style="height:95%;animation-delay:1.2s"></i></div></div>
+        <div class="w" id="wCal"><b id="mon">November</b><div class="cal" id="cal"></div></div>
+        <div class="sbar" id="sbar"><div class="ws" id="ws"><i class="on"></i><i></i><i></i><i></i></div><div class="c" id="bclk">12:00</div>
+          <div class="r"><div class="mini" id="mini"></div><span>CPU 9%</span><span>🔊</span></div></div>
+        <div class="dock" id="dock"></div>
+      </div>
+      <div class="stand"></div><div class="foot"></div>
+    </div>
+    <div class="rail" id="rail"></div>
+  </div>
+</section>
+
+<section class="end" id="price">
+  <div>
+    <h2 class="reveal"><span>One payment.</span><span class="grad">Every beat.</span></h2>
+    <div class="ticket reveal d1"><div class="in2">
+      <div class="amt grad">£1.99</div>
+      <div style="color:var(--mu)">once · yours forever</div>
+      <ul>
+        <li>Every widget, visualizer and theme</li>
+        <li>Status bar, glass dock and launcher</li>
+        <li>All future updates included</li>
+        <li>Sign in with Google, pay securely with Stripe</li>
+      </ul>
+      <a class="btn primary mag" href="https://github.com/amiralidjk/auren/releases/latest">Download Auren</a>
+      <p style="color:var(--mu);font-size:13px;margin:16px 0 0">Windows 10 &amp; 11</p>
+    </div></div>
+  </div>
+</section>
 </main>
+
+<footer><span>© 2026 Auren</span><span><a href="privacy.html">Privacy policy</a><a href="https://github.com/amiralidjk/auren/issues">Support</a></span></footer>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s), root = document.documentElement;
+const reduce = false;   // the page is all about motion, so it stays animated even when Windows animations are off
+const DPR = Math.min(devicePixelRatio || 1, 2);
+const clamp = (v,a=0,b=1) => Math.max(a, Math.min(b, v));
+const smooth = (a,b,x) => { const t = clamp((x-a)/(b-a)); return t*t*(3-2*t); };
+
+/* ---------- colour themes: the page flows through them as you scroll ---------- */
+const hex = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
+const THEMES = [
+  {bg:'#05040a',fg:'#f5f3ff',mu:'#9f99bd',a1:'#ad27ff',a2:'#00dff0',w1:'#1b0b33',w2:'#041826'}, // black
+  {bg:'#14041f',fg:'#f8f0ff',mu:'#bba5d8',a1:'#c44bff',a2:'#7b6bff',w1:'#40106b',w2:'#1c0b40'}, // purple
+  {bg:'#030a20',fg:'#eef5ff',mu:'#94a9cd',a1:'#3d7bff',a2:'#00dff0',w1:'#0c2c70',w2:'#01344e'}, // blue
+  {bg:'#f3f1fb',fg:'#140f29',mu:'#5f5978',a1:'#7b2bff',a2:'#1f6bff',w1:'#dcd4ff',w2:'#c8e9ff'}, // white
+  {bg:'#05040a',fg:'#f5f3ff',mu:'#9f99bd',a1:'#ad27ff',a2:'#00dff0',w1:'#1b0b33',w2:'#041826'}  // black again
+].map(t => Object.fromEntries(Object.entries(t).map(([k,v]) => [k, hex(v)])));
+const KEYS = Object.keys(THEMES[0]);
+let C = THEMES[0], lastVars = '';
+const css = a => `rgb(${a[0]},${a[1]},${a[2]})`;
+function theme(t){
+  t = Number.isFinite(t) ? clamp(t, 0, THEMES.length-1) : 0;
+  const i = Math.min(THEMES.length-2, Math.floor(t)), f = t-i, A = THEMES[i], B = THEMES[i+1], out = {};
+  for (const k of KEYS) out[k] = A[k].map((v,j) => Math.round(v + (B[k][j]-v)*f));
+  C = out;
+  const s = KEYS.map(k => `--${k}:${css(out[k])}`).join(';') + `;--fgrgb:${out.fg.join(',')}`;
+  if (s !== lastVars){ lastVars = s; KEYS.forEach(k => root.style.setProperty('--'+k, css(out[k]))); root.style.setProperty('--fgrgb', out.fg.join(',')); }
+}
+
+/* ---------- fake music ---------- */
+const N = 64, spec = new Float32Array(N); let bass = 0, beatN = 0, lastB = -1;
+function audio(t){
+  const beat = 60/116, ph = (t%beat)/beat, b = Math.floor(t/beat);
+  if (b !== lastB){ lastB = b; beatN++; }
+  bass = Math.exp(-ph*5.5) * (b%4 === 3 ? .7 : 1);
+  for (let i=0;i<N;i++){ const f = i/N;
+    let v = bass*Math.max(0,1-f*2.4)*.95 + (.26+.18*Math.sin(t*1.6+i*.42)+.12*Math.sin(t*3.3-i*.85))*(1-f*.55) + (f>.55 ? Math.random()*.22*(ph<.5?1:.45) : 0);
+    v = clamp(v,.03,1); spec[i] += (v-spec[i])*(v>spec[i]?.5:.13); }
+  root.style.setProperty('--beat', bass.toFixed(3));
+}
+
+function fit(cv, scale=DPR){
+  const r = cv.getBoundingClientRect(), w = Math.max(1, Math.round(r.width*scale)), h = Math.max(1, Math.round(r.height*scale));
+  if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  return [w,h];
+}
+
+/* ---------- aurora background (low-res, blurred by CSS) ---------- */
+const au = $('#aurora'), ax = au.getContext('2d');
+function drawAurora(t){
+  const [w,h] = fit(au, .25); ax.clearRect(0,0,w,h);
+  const light = C.bg[0] > 128, blobs = [[C.a1,.3,.3,.9],[C.a2,.75,.65,1.1],[C.a1,.6,.15,1.3],[C.a2,.2,.8,.7]];
+  blobs.forEach(([c,x,y,s],i) => {
+    const cx = (x + .12*Math.sin(t*.13*s + i))*w, cy = (y + .1*Math.cos(t*.11*s + i*2))*h, r = Math.max(w,h)*(.35 + bass*.04);
+    const g = ax.createRadialGradient(cx,cy,0,cx,cy,r);
+    g.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${light ? .22 : .2})`); g.addColorStop(1,'rgba(0,0,0,0)');
+    ax.fillStyle = g; ax.fillRect(0,0,w,h);
+  });
+}
+
+/* ---------- intro: particles gather into the name ---------- */
+const dust = $('#dust'), dx = dust.getContext('2d'); let P = [], dustW = 0, mouse = {x:-1e4,y:-1e4};
+function buildDust(){
+  const [w,h] = fit(dust); dustW = w;
+  const off = document.createElement('canvas'); off.width = w; off.height = h; const o = off.getContext('2d');
+  const fs = Math.min(w*.26, h*.42);
+  o.font = `700 ${fs}px "Space Grotesk", Inter, sans-serif`; o.textAlign = 'center'; o.textBaseline = 'middle';
+  o.fillStyle = '#fff'; o.fillText('Auren', w/2, h*.38);
+  const data = o.getImageData(0,0,w,h).data, step = Math.max(3, Math.round(Math.sqrt(w*h/ 380000)*3.2)), pts = [];
+  for (let y=0;y<h;y+=step) for (let x=0;x<w;x+=step) if (data[(y*w+x)*4+3] > 128) pts.push([x,y]);
+  const old = P; P = pts.map((p,i) => {
+    const q = old[i];
+    return q ? {x:q.x,y:q.y,vx:q.vx,vy:q.vy,tx:p[0],ty:p[1],s:q.s}
+             : {x:Math.random()*w, y:Math.random()*h, vx:0, vy:0, tx:p[0], ty:p[1], s:Math.random()*.6+.7};
+  });
+  if (reduce) P.forEach(p => { p.x = p.tx; p.y = p.ty; });
+}
+const fontReady = document.fonts ? Promise.race([document.fonts.load('700 100px "Space Grotesk"'), new Promise(r => setTimeout(r, 1200))]) : Promise.resolve();
+fontReady.then(buildDust);
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(buildDust, 200); });
+const intro = $('.intro');
+intro.addEventListener('pointermove', e => { const r = dust.getBoundingClientRect(); mouse.x = (e.clientX-r.left)*DPR; mouse.y = (e.clientY-r.top)*DPR; });
+intro.addEventListener('pointerleave', () => { mouse.x = mouse.y = -1e4; });
+let lastKick = -1;
+function drawDust(t){
+  const [w,h] = fit(dust); if (w !== dustW) buildDust();
+  dx.clearRect(0,0,w,h);
+  const gather = smooth(.2, 1.8, t), cx = w/2, cy = h*.38, kick = beatN !== lastKick; lastKick = beatN;
+  const R = 90*DPR, buckets = 10, paths = Array.from({length:buckets}, () => new Path2D());
+  for (const p of P){
+    p.vx += (p.tx - p.x)*.045*gather; p.vy += (p.ty - p.y)*.045*gather;
+    if (gather < 1){ p.vx += Math.sin(t*2 + p.ty*.01)*.3*(1-gather); p.vy += Math.cos(t*2 + p.tx*.01)*.3*(1-gather); }
+    if (kick && gather > .95){ const a = Math.atan2(p.y-cy, p.x-cx); p.vx += Math.cos(a)*2.2*DPR; p.vy += Math.sin(a)*2.2*DPR; }
+    const mx = p.x - mouse.x, my = p.y - mouse.y, d2 = mx*mx + my*my;
+    if (d2 < R*R){ const d = Math.sqrt(d2)||1, f = (1 - d/R)*6; p.vx += mx/d*f; p.vy += my/d*f; }
+    p.vx *= .84; p.vy *= .84; p.x += p.vx; p.y += p.vy;
+    const b = Math.min(buckets-1, Math.max(0, Math.floor(p.x/w*buckets))), s = 1.6*DPR*p.s;
+    paths[b].rect(p.x, p.y, s, s);
+  }
+  dx.globalCompositeOperation = 'lighter';
+  paths.forEach((path,i) => { const f = i/(buckets-1), c = C.a1.map((v,j) => Math.round(v + (C.a2[j]-v)*f));
+    dx.fillStyle = `rgb(${c})`; dx.shadowColor = dx.fillStyle; dx.shadowBlur = 8*DPR; dx.fill(path); });
+  dx.globalCompositeOperation = 'source-over'; dx.shadowBlur = 0;
+}
+
+/* ---------- the story ---------- */
+const CAPS = [
+  ['A quiet desktop.', 'Just a wallpaper and a few icons. Scroll, and give it a pulse.', 'Quiet'],
+  ['Then the music starts.', 'Auren hears whatever your PC is playing and turns it into light. Bars, rings, waves, in any colour.', 'Music'],
+  ['Every word, on time.', 'Synced lyrics glow line by line, with the cover and the track right beside them.', 'Lyrics'],
+  ['A desktop that feels new.', 'A slim status bar on top. A glass dock below that grows under your mouse. Press Win to launch anything.', 'Dock'],
+  ['Everything at a glance.', 'Clock, weather, calendar, stats and your own text. Switch on what you need, hide the rest.', 'Widgets'],
+  ['Your layout, your rules.', 'Open the layout editor. Drag widgets on a grid, snap them together, then lock them in place.', 'Layout'],
+  ['All of it, in rhythm.', 'Every piece moves with the beat. Your music, your colours, your desktop.', 'Rhythm']
+];
+const CH_THEME = [0, 1, 1.6, 2, 3, 3, 4];   // which colour world each chapter lives in
+const story = $('#story'), desk = $('#desk'), capEl = $('#cap'), rail = $('#rail');
+rail.innerHTML = CAPS.map((c,i) => `<button data-i="${i}">${c[2]}</button>`).join('');
+const railBtns = [...rail.children];
+rail.onclick = e => { const b = e.target.closest('button'); if (!b) return;
+  const i = +b.dataset.i, span = story.offsetHeight - innerHeight;
+  scrollTo({top: story.offsetTop + (i+.35)/CAPS.length*span, behavior:'smooth'}); };
+const words = s => s.split(' ').map((w,i) => `<span class="wd" style="--i:${i}">${w}</span>`).join(' ');
+let capI = -1;
+function setCap(i){
+  capI = i; const [h,p] = CAPS[i];
+  $('#capN').textContent = String(i+1).padStart(2,'0');
+  $('#capH').innerHTML = words(h); $('#capP').innerHTML = words(p).replace(/--i:(\d+)/g, (m,n) => `--i:${+n+6}`);
+  capEl.classList.remove('in'); requestAnimationFrame(() => requestAnimationFrame(() => capEl.classList.add('in')));
+  railBtns.forEach((b,k) => b.classList.toggle('on', k===i));
+}
+const W = id => $('#'+id);
+function storyStep(){
+  const r = story.getBoundingClientRect(), span = r.height - innerHeight;
+  const p = span > 0 ? clamp(-r.top/span) : 0, c = p*CAPS.length, ci = Math.min(CAPS.length-1, Math.floor(c)), fr = c - ci;
+  // colour: hold inside a chapter, blend near its end
+  const next = Math.min(CAPS.length-1, ci+1), blend = smooth(.65, 1, fr);
+  let tv = CH_THEME[ci] + (CH_THEME[next]-CH_THEME[ci])*blend;
+  if (r.top > 0) tv = 0;                                 // still on the intro
+  if (r.bottom < innerHeight) tv = 4;                    // past the story
+  theme(tv);
+  if (ci !== capI) setCap(ci);
+  $('#capT').style.setProperty('--cp', (fr*100).toFixed(1)+'%');
+  // monitor: tilts up into place at the start, breathes with the beat at the end
+  const rise = smooth(0, .5, c), fin = smooth(6, 6.6, c);
+  desk.style.transform = `rotateX(${(1-rise)*28}deg) scale(${(.82 + .18*rise) * (1 + fin*bass*.015)})`;
+  W('hello').classList.toggle('gone', ci >= 1);
+  W('wViz').classList.toggle('show', ci >= 1);
+  W('wLy').classList.toggle('show', ci >= 2);
+  W('sbar').classList.toggle('show', ci >= 3);
+  W('dock').classList.toggle('show', ci >= 3);
+  ['wClk','wWx','wCal'].forEach(id => W(id).classList.toggle('show', ci >= 4));
+  desk.classList.toggle('arrange', ci === 5);
+  desk.classList.toggle('finale', ci === 6);
+  return r.bottom > 0 && r.top < innerHeight;
+}
+
+/* visualizer widget: cycles its own styles */
+const vizCv = $('#vizCv'), vx = vizCv.getContext('2d'), STY = ['Bars','Ring','Wave','Mirror'];
+function rr(ctx,x,y,w,h,r){ ctx.beginPath(); w = Math.max(0,w); h = Math.max(0,h); r = clamp(r,0,Math.min(w,h)/2);
+  ctx.roundRect ? ctx.roundRect(x,y,w,h,r) : ctx.rect(x,y,w,h); }
+function drawViz(t){
+  const [w,h] = fit(vizCv); vx.clearRect(0,0,w,h);
+  const st = STY[Math.floor(t/3.2) % STY.length]; if ($('#vizLbl').textContent !== st) $('#vizLbl').textContent = st;
+  const g = vx.createLinearGradient(0,0,w,0); g.addColorStop(0, css(C.a1)); g.addColorStop(1, css(C.a2));
+  vx.globalCompositeOperation = C.bg[0] > 128 ? 'source-over' : 'lighter'; vx.shadowBlur = 16*DPR; vx.shadowColor = css(C.a1);
+  vx.fillStyle = vx.strokeStyle = g;
+  const n = 36, pad = w*.06, gap = w*.006, bw = (w-pad*2)/n - gap;
+  if (st === 'Bars' || st === 'Mirror'){
+    const mid = st === 'Mirror' ? h*.55 : h*.85;
+    for (let i=0;i<n;i++){ const v = spec[Math.floor(i/n*N*.85)], bh = v*h*(st==='Mirror'?.36:.62), x = pad + i*(bw+gap);
+      st === 'Mirror' ? rr(vx,x,mid-bh,bw,bh*2,bw/2) : rr(vx,x,mid-bh,bw,bh,bw/2); vx.fill(); }
+  } else if (st === 'Ring'){
+    const cx = w/2, cy = h*.55, R = Math.min(w,h)*.2*(1+bass*.08), M = 80; vx.lineCap = 'round'; vx.lineWidth = Math.max(2, w*.008);
+    for (let i=0;i<M;i++){ const a = i/M*Math.PI*2 - Math.PI/2, v = spec[Math.floor(Math.abs(i/M*2-1)*(N-1)*.8)], L = v*Math.min(w,h)*.24 + 3;
+      vx.beginPath(); vx.moveTo(cx+Math.cos(a)*R, cy+Math.sin(a)*R); vx.lineTo(cx+Math.cos(a)*(R+L), cy+Math.sin(a)*(R+L)); vx.stroke(); }
+  } else {
+    for (const d of [1,-1]){ vx.beginPath(); vx.moveTo(0,h*.55);
+      for (let i=0;i<=n;i++){ const v = spec[Math.floor(Math.min(i,n-1)/n*N*.8)]*Math.sin(i/n*Math.PI); vx.lineTo(i/n*w, h*.55 - d*v*h*.38); }
+      vx.lineTo(w,h*.55); vx.closePath(); vx.globalAlpha = d>0 ? .8 : .35; vx.fill(); }
+    vx.globalAlpha = 1;
+  }
+  vx.shadowBlur = 0; vx.globalCompositeOperation = 'source-over';
+}
+
+/* lyrics */
+const LY = ['Neon in the window glass','every light a heartbeat','the city hums in violet','and the night keeps the time',
+            'turn it up, let the walls move','the whole screen breathing slow','blue on black, we’re drifting','your desktop sings along'];
+const ly = $('#ly'); ly.innerHTML = LY.map(l => `<li>${l}</li>`).join(''); const lis = [...ly.children]; let lyI = -1;
+function drawLyrics(t){
+  const L = 2.8, total = L*LY.length, lt = t % total, i = Math.floor(lt/L), p = (lt%L)/L;
+  if (i !== lyI){ lyI = i; lis.forEach((li,k) => li.classList.toggle('on', k===i));
+    ly.style.transform = `translateY(${-(lis[i].offsetTop + lis[i].offsetHeight/2)}px)`; }
+  lis[i].style.setProperty('--p', Math.min(100, p*120)+'%');
+  $('#prog').style.setProperty('--w', ((40 + lt/total*120)/192*100)+'%');
+}
+
+/* bar, dock, clock, calendar */
+const mini = $('#mini'); mini.innerHTML = '<i></i>'.repeat(6); const miniB = [...mini.children];
+const dock = $('#dock'), ICONS = [['#ad27ff','#5b2bff'],['#3d7bff','#00dff0'],['#ffffff','#9b83ff'],['#00dff0','#0a6cff'],['#9b83ff','#ff6ad5'],['#2a2440','#5d4f99'],['#5b2bff','#00dff0']];
+dock.innerHTML = ICONS.map(([a,b]) => `<i style="background:linear-gradient(135deg,${a},${b})"></i>`).join('');
+const dIc = [...dock.children]; let deskMouse = null;
+desk.addEventListener('pointermove', e => deskMouse = e.clientX); desk.addEventListener('pointerleave', () => deskMouse = null);
+const wsD = [...document.querySelectorAll('#ws i')];
+function drawDesk(t){
+  miniB.forEach((b,i) => b.style.height = (15 + spec[i*8]*85)+'%');
+  const ws = Math.floor(t/3) % 4; wsD.forEach((d,i) => d.classList.toggle('on', i===ws));
+  const r = dock.getBoundingClientRect(), mx = deskMouse ?? (r.left + r.width*(.5 + .48*Math.sin(t*.8)));
+  dIc.forEach(ic => { const ir = ic.getBoundingClientRect(), d = Math.abs(mx - (ir.left + ir.width/2)), s = 1 + .6*Math.max(0, 1 - d/(r.width*.22));
+    ic.style.transform = `scale(${s.toFixed(3)}) translateY(${(-(s-1)*10).toFixed(1)}%)`; });
+}
+function clocks(){
+  const d = new Date(), hm = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  $('#clk').textContent = $('#bclk').textContent = hm;
+  $('#date').textContent = d.toLocaleDateString([], {weekday:'long', day:'numeric', month:'long'});
+  $('#mon').textContent = d.toLocaleDateString([], {month:'long', year:'numeric'});
+  const first = (new Date(d.getFullYear(), d.getMonth(), 1).getDay()+6)%7, days = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  let html = 'MTWTFSS'.split('').map(x => `<span style="opacity:.5">${x}</span>`).join('') + '<span></span>'.repeat(first);
+  for (let i=1;i<=days;i++) html += `<span class="${i===d.getDate()?'t':''}">${i}</span>`;
+  $('#cal').innerHTML = html;
+}
+clocks(); setInterval(clocks, 15000);
+
+/* ---------- finale reveal, magnetic buttons, cursor ---------- */
+const rio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('on'); rio.unobserve(e.target); } }), {threshold:.2});
+document.querySelectorAll('.reveal').forEach(el => rio.observe(el));
+document.querySelectorAll('.mag').forEach(b => {
+  b.addEventListener('pointermove', e => { const r = b.getBoundingClientRect();
+    b.style.transform = `translate(${(e.clientX - r.left - r.width/2)*.25}px,${(e.clientY - r.top - r.height/2)*.35}px)`; });
+  b.addEventListener('pointerleave', () => { b.style.transition = 'transform .5s cubic-bezier(.2,.9,.25,1.4)'; b.style.transform = ''; setTimeout(() => b.style.transition = '', 500); });
+});
+const cur = $('#cur'); let cx = -100, cy = -100, tx = -100, ty = -100;
+addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; cur.style.opacity = 1;
+  cur.classList.toggle('big', !!e.target.closest('a,button')); });
+
+/* ---------- one loop ---------- */
+const t0 = performance.now();
+function frame(now){
+  if (!reduce) requestAnimationFrame(frame);
+  const t = (now - t0)/1000;
+  const run = (fn) => { try { fn(); } catch (e) { console.warn(e); } };
+  run(() => audio(t));
+  let inStory = false; run(() => { inStory = storyStep(); });
+  run(() => drawAurora(t));
+  if (intro.getBoundingClientRect().bottom > 0) run(() => drawDust(t));
+  if (inStory){ run(() => drawViz(t)); run(() => drawLyrics(t)); run(() => drawDesk(t)); }
+  cx += (tx-cx)*.2; cy += (ty-cy)*.2; cur.style.transform = `translate(${cx}px,${cy}px)`;
+}
+if (reduce){ addEventListener('scroll', () => frame(performance.now()), {passive:true}); setTimeout(() => frame(t0+4000), 100); fontReady.then(() => frame(t0+4000)); }
+else requestAnimationFrame(frame);
+})();
+</script>
 </body>
 </html>
