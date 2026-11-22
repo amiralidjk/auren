@@ -24,7 +24,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Inter,system-ui
 a{color:inherit}
 h1,h2,h3{font-family:"Space Grotesk",Inter,sans-serif;letter-spacing:-.03em;margin:0;font-weight:700}
 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-#aurora{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;filter:blur(30px)}
+#aurora{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;filter:blur(30px);will-change:transform}
 main,header,footer{position:relative;z-index:1}
 
 /* top bar */
@@ -171,7 +171,7 @@ footer{border-top:1px solid var(--line);padding:34px 24px;color:var(--mu);font-s
 footer a{text-decoration:none;margin-left:18px}footer a:hover{color:var(--fg)}
 
 /* cursor */
-.cur{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:1.5px solid var(--a2);pointer-events:none;z-index:60;
+.cur{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:1.5px solid var(--a2);pointer-events:none;z-index:60;will-change:transform;
   mix-blend-mode:difference;transition:width .25s,height .25s,margin .25s,background .25s;opacity:0}
 .cur.big{width:64px;height:64px;margin:-32px 0 0 -32px;background:rgba(255,255,255,.08)}
 @media (pointer:coarse){.cur{display:none}}
@@ -298,7 +298,7 @@ function theme(t){
 }
 
 /* ---------- fake music ---------- */
-const N = 64, spec = new Float32Array(N); let bass = 0, beatN = 0, lastB = -1;
+const N = 64, spec = new Float32Array(N); let bass = 0, beatN = 0, lastB = -1, lastBeat = '';
 function audio(t){
   const beat = 60/116, ph = (t%beat)/beat, b = Math.floor(t/beat);
   if (b !== lastB){ lastB = b; beatN++; }
@@ -306,7 +306,7 @@ function audio(t){
   for (let i=0;i<N;i++){ const f = i/N;
     let v = bass*Math.max(0,1-f*2.4)*.95 + (.26+.18*Math.sin(t*1.6+i*.42)+.12*Math.sin(t*3.3-i*.85))*(1-f*.55) + (f>.55 ? Math.random()*.22*(ph<.5?1:.45) : 0);
     v = clamp(v,.03,1); spec[i] += (v-spec[i])*(v>spec[i]?.5:.13); }
-  root.style.setProperty('--beat', bass.toFixed(3));
+  const bs = bass.toFixed(3); if (bs !== lastBeat){ lastBeat = bs; $('#desk').style.setProperty('--beat', bs); }
 }
 
 function fit(cv, scale=DPR){
@@ -476,7 +476,8 @@ function drawDesk(t){
   miniB.forEach((b,i) => b.style.height = (15 + spec[i*8]*85)+'%');
   const ws = Math.floor(t/3) % 4; wsD.forEach((d,i) => d.classList.toggle('on', i===ws));
   const r = dock.getBoundingClientRect(), mx = deskMouse ?? (r.left + r.width*(.5 + .48*Math.sin(t*.8)));
-  dIc.forEach(ic => { const ir = ic.getBoundingClientRect(), d = Math.abs(mx - (ir.left + ir.width/2)), s = 1 + .6*Math.max(0, 1 - d/(r.width*.22));
+  const cxs = dIc.map(ic => { const ir = ic.getBoundingClientRect(); return ir.left + ir.width/2; });
+  dIc.forEach((ic,k) => { const d = Math.abs(mx - cxs[k]), s = 1 + .6*Math.max(0, 1 - d/(r.width*.22));
     ic.style.transform = `scale(${s.toFixed(3)}) translateY(${(-(s-1)*10).toFixed(1)}%)`; });
 }
 function clocks(){
@@ -505,14 +506,14 @@ addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; cur.style
   cur.classList.toggle('big', !!e.target.closest('a,button')); });
 
 /* ---------- one loop ---------- */
-const t0 = performance.now();
+const t0 = performance.now(); let auN = 1;
 function frame(now){
   if (!reduce) requestAnimationFrame(frame);
   const t = (now - t0)/1000;
   const run = (fn) => { try { fn(); } catch (e) { console.warn(e); } };
   run(() => audio(t));
   let inStory = false; run(() => { inStory = storyStep(); });
-  run(() => drawAurora(t));
+  if (reduce || (auN = (auN+1)%2) === 0) run(() => drawAurora(t));
   if (intro.getBoundingClientRect().bottom > 0) run(() => drawDust(t));
   if (inStory){ run(() => drawViz(t)); run(() => drawLyrics(t)); run(() => drawDesk(t)); }
   cx += (tx-cx)*.35; cy += (ty-cy)*.35; cur.style.transform = `translate(${cx}px,${cy}px)`;
