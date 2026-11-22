@@ -29,4 +29,13 @@ Auren draws every widget with your graphics card. The more widgets you turn on, 
 
 ## Installing
 
-The installer isn't code-signed yet, so Windows SmartScreen may warn you the first time. Click **More info → Run anyway**.
+1. Open the [official GitHub release](https://github.com/amiralidjk/auren/releases/latest). Under **Assets**, choose the Windows x64 installer.
+2. To verify the download, open PowerShell in the folder containing the installer and calculate its SHA-256. Use the filename shown in the release. For example, for 0.1.45:
+
+   ```powershell
+   Get-FileHash -Algorithm SHA256 -LiteralPath .\Auren-0.1.45-Setup-x64.exe
+   ```
+
+   Compare the result with the SHA-256 displayed next to the installer in GitHub's Assets list. A match confirms you have the same file published on GitHub.
+
+The installer is currently unsigned. On Windows 11, Smart App Control may block it if Windows can’t verify the publisher. If the installer is blocked, keep Windows protection enabled and [contact Auren support](https://github.com/amiralidjk/auren/issues) with the exact message and release version. [Microsoft’s Smart App Control guidance](https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions)
